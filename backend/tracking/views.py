@@ -47,7 +47,56 @@ class ItemsView(View):
         with open(storage_file, 'w') as f:
             json.dump(existing_items, f)
         return JsonResponse({'results': existing_items})
+    
+    def patch(self, request, *args, **kwargs):
+        if not os.path.exists(storage_file):
+            return JsonResponse([])
+        
+        payload = parse_json_request(request)
+        logger.info(payload)
+        with open(storage_file, 'r') as f:
+            existing_items = json.load(f)
+
+        incoming_id = payload.get('id')
+        if incoming_id is None or not any(item['id'] == incoming_id for item in existing_items):
+            return JsonResponse({'error': 'ID does not exist'}, status=requests.codes.bad_request)
+        
+
+        for item in existing_items:
+            if item['id'] == payload['id']:
+                item.update(payload)
+
+        with open(storage_file, 'w') as f:
+            json.dump(existing_items, f)
+        return JsonResponse({'results': existing_items})
+        
+    def delete(self, request, *args, **kwargs):
+        if not os.path.exists(storage_file):
+            return JsonResponse([])
+        
+        payload = parse_json_request(request)
+        logger.info(payload)
+        with open(storage_file, 'r') as f:
+            existing_items = json.load(f)
+        
+        incoming_id = payload.get('id')
+        if incoming_id is None or not any(item['id'] == incoming_id for item in existing_items):
+            return JsonResponse({'error': 'ID does not exist'}, status=requests.codes.bad_request)
+        
+        for item in existing_items:
+            if item['id'] == payload['id']:
+                existing_items.remove(item)
+
+        with open(storage_file, 'w') as f:
+            json.dump(existing_items, f)
+            return JsonResponse({'results': existing_items})
 
 
-#TODO: add patch and delete methods
+
+
+    
+
+
+
+#TODO: add delete method
 
