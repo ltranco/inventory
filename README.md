@@ -1,3 +1,5 @@
 - This is our project for a boba shop inventory app
 - Backend will be built in django
+    - `docker compose up --build`
+    - `docker compose up` to run
 - Frontend will be built in react

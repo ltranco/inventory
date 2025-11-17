@@ -1,0 +1,9 @@
+.tile {
+    padding: 10px;
+    border: 1px solid blue;
+    cursor: pointer;
+    margin: 10px;
+    border-radius: 20px;
+    text-align: center;
+    color: #ff5050;
+}
