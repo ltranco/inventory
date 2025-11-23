@@ -13,4 +13,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
         })
     }
+
+
+
+/* 
+add someway to add more div boxes and let them be more user friendly
+let them customize the boxes (text color, box color)
+backend separate count
+(dont let inventory go negative)
+*/
+
+    const boxes = document.querySelectorAll(".box");
+
+    boxes.forEach(box => {
+        const plusButton = box.querySelector(".plus");
+        const minusButton = box.querySelector(".minus");
+        const countStr = box.querySelector(".count");
+
+        let count = parseInt(countStr.textContent);
+
+        plusButton.addEventListener("click", () => {
+            count++;
+            countStr.textContent = count;
+        });
+
+        minusButton.addEventListener("click", () => {
+            if (count > 0) { // making sure the count doesnt go negative
+                count--;
+                countStr.textContent = count;
+            }
+        });
+    });
+
 });

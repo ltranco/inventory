@@ -1,9 +1,57 @@
-.tile {
-    padding: 10px;
-    border: 1px solid blue;
-    cursor: pointer;
-    margin: 10px;
-    border-radius: 20px;
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+    min-height: 100vh;
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.title {
+    font-size: 24px;
     text-align: center;
-    color: #ff5050;
+    margin-bottom: 20px;
+}
+
+.middle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.count {
+    font-size: 48px;
+    font-weight: bold;
+}
+
+button {
+    background: transparent;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+#green {
+    background-color: #74a662;
+}
+
+#black {
+    background-color: #786554;
+}
+
+#oolong {
+    background-color: #fde2b4;
+}
+
+#grey {
+    background-color: #675b5b;
 }
