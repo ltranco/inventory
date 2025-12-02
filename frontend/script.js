@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({id: id})
             })
-            .then(res => res.json())
+            .then(x => x.json())
             .then(() => {
                 box.remove(); // remove from DOM
             });
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // fetch current items to find any available ids
         fetch("http://localhost:8000/items/")
-            .then(res => res.json())
+            .then(x => x.json())
             .then(items => {
             // get existing ids
                 const existingIds = items.map(item => item.id);
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newItem)
             })
-            .then(res => res.json())
+            .then(x => x.json())
             .then(() => {
                 createBox(newItem.name, newItem.id, newItem.count);
                 itemInput.value = "";
@@ -109,11 +109,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // gets all existing items from backend and creates dom elements for each item
     fetch("http://localhost:8000/items/")
-        .then(res => res.json())
+        .then(x => x.json())
         .then(items => {
             items.forEach(item => {
                 createBox(item.name, item.id, item.count);
             });
         });
+
+
+
+        // maybe enhance the coloring options by adding a new input section where they can also enter a new item name + color of choice and then add item
+        // somehow save the colors in the backend as well
 
 });
