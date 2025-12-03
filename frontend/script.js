@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    // GET Method, fetching existing items from the backend
+    
     const container = document.querySelector(".grid-container");
     function createBox(name, id, initialCount = 0) {
         const box = document.createElement("div");
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    // PATCH Method
+        // PATCH Method
         function patchCount(newCount) {
             fetch(`http://localhost:8000/items/`, {
                 method: "PATCH",
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-    // DELETE Method
+        // DELETE Method
         deleteButton.addEventListener("click", () => {
             fetch(`http://localhost:8000/items/`, {
                 method: "DELETE",
@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(x => x.json())
             .then(() => {
                 box.remove(); // remove from DOM
-            });
+            })
+            .catch(err => console.error("Error deleting item:", err));
         });
     }
 
@@ -102,20 +103,21 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(() => {
                 createBox(newItem.name, newItem.id, newItem.count);
                 itemInput.value = "";
-            });
+            })
+            .catch(err => console.error("Error adding item:", err));
     });
 
     });
 
-    // gets all existing items from backend and creates dom elements for each item
+    // GET Method, fetching existing items from the backend
     fetch("http://localhost:8000/items/")
         .then(x => x.json())
         .then(items => {
             items.forEach(item => {
                 createBox(item.name, item.id, item.count);
             });
-        });
-
+        })
+        .catch(err => console.error("Error fetching items:", err));
 
 
         // maybe enhance the coloring options by adding a new input section where they can also enter a new item name + color of choice and then add item
