@@ -80,6 +80,14 @@ button.delete {
     border-radius: 5px;
 }
 
+#search {
+    display: block;
+    margin: 20px auto;
+    padding: 5px 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
 
 
 #green {

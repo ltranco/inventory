@@ -1,7 +1,11 @@
-from django.urls import path
-from .views import ItemsView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ItemLedgerViewSet, ItemViewSet
+
+router = DefaultRouter()
+router.register(r'items', ItemViewSet, basename='items')
+router.register(r'ledger', ItemLedgerViewSet, basename='ledger')
 
 urlpatterns = [
-    path('items/', ItemsView.as_view()),
-    path('items/<int:item_id>/', ItemsView.as_view()),
+    path('', include(router.urls)),
 ]

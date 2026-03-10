@@ -1,20 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-    
     const container = document.querySelector(".grid-container");
+    const apiBaseUrl = "http://127.0.0.1:8000/api/items/"; 
+    const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/";
+
     function createBox(name, id, initialCount = 0) {
         const box = document.createElement("div");
         box.classList.add("box");
         box.id = id;
 
         box.innerHTML = `
-        <div class="title">${name}</div>
-        <div class="middle">
-            <button class="minus">-</button>
-            <div class="count">${initialCount}</div>
-            <button class="plus">+</button>
-        </div>
-        <button class="delete">DEL</button>
+            <div class="title">${name}</div>
+            <div class="middle">
+                <button class="minus">-</button>
+                <div class="count">${initialCount}</div>
+                <button class="plus">+</button>
+            </div>
+            <button class="delete">DEL</button>
         `;
 
         container.appendChild(box);
@@ -26,52 +27,66 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let count = initialCount;
 
-
-
-        // PATCH Method
-        function patchCount(newCount) {
-            fetch(`http://localhost:8000/items/`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ id: id, count: newCount })
+        // PATCH Method - update count
+        function postLedger(delta) {
+            return fetch(ledgerApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                item: id,
+                delta: delta
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(err => {
+                        throw new Error(JSON.stringify(err));
+                    });
+                }
+                return res.json();
             });
         }
 
-
         plusButton.addEventListener("click", () => {
-            count++;
-            countStr.textContent = count;
-            patchCount(count); // update backend
+            postLedger(1)
+                .then(() => {
+                    count++;
+                    countStr.textContent = count;
+                })
+                .catch(err => {
+                    console.error("Error adding count", err);
+                    alert("Error adding count: " + err.message);
+                });
         });
 
         minusButton.addEventListener("click", () => {
-            if (count > 0) { // making sure the count doesnt go negative
+        postLedger(-1)
+            .then(() => {
                 count--;
                 countStr.textContent = count;
-                patchCount(count); // update backend
-            }
+            })
+            .catch(err => {
+                console.error("Error removing count", err);
+                alert("Error removing count: " + err.message);
+            });
         });
 
         // DELETE Method
         deleteButton.addEventListener("click", () => {
-            fetch(`http://localhost:8000/items/`, {
+            fetch(`${apiBaseUrl}${id}/`, {
                 method: "DELETE",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({id: id})
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: id })
             })
-            .then(x => x.json())
-            .then(() => {
-                box.remove(); // remove from DOM
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to delete item");
+                box.remove();
             })
             .catch(err => console.error("Error deleting item:", err));
         });
     }
 
-    
-    
-
-
-    // get correct id for new item and then POST to backend
+    // POST Method - add new item
     const itemInput = document.getElementById("item");
     const addItemButton = document.getElementById("addItem");
 
@@ -79,48 +94,61 @@ document.addEventListener("DOMContentLoaded", function () {
         const itemName = itemInput.value.trim();
         if (!itemName) return;
 
-        // fetch current items to find any available ids
-        fetch("http://localhost:8000/items/")
-            .then(x => x.json())
-            .then(items => {
-            // get existing ids
-                const existingIds = items.map(item => item.id);
-            
-            // find smallest unused id
-                let newId = 1;
-                while (existingIds.includes(newId)) {
-                    newId++;
-                }
-
-                const newItem = { id: newId, name: itemName, count: 0 };
-            // POST to backend
-            fetch("http://localhost:8000/items/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newItem)
-            })
-            .then(x => x.json())
-            .then(() => {
-                createBox(newItem.name, newItem.id, newItem.count);
-                itemInput.value = "";
-            })
-            .catch(err => console.error("Error adding item:", err));
-    });
-
-    });
-
-    // GET Method, fetching existing items from the backend
-    fetch("http://localhost:8000/items/")
-        .then(x => x.json())
-        .then(items => {
-            items.forEach(item => {
-                createBox(item.name, item.id, item.count);
-            });
+        fetch(apiBaseUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: itemName })
         })
-        .catch(err => console.error("Error fetching items:", err));
+        .then(res => {
+            if (res.status === 400) throw new Error("Item already exists");
+            if (!res.ok) throw new Error("Error adding item");
+            return res.json();
+        })
+        .then(item => {
+            createBox(item.name, item.id, item.count);
+            itemInput.value = "";
+        })
+        .catch(err => alert(err.message));
+    });
 
 
-        // maybe enhance the coloring options by adding a new input section where they can also enter a new item name + color of choice and then add item
-        // somehow save the colors in the backend as well
 
+
+    // GET Method - fetch all items on page load
+    function loadItems(searchTerm = "") {
+        container.innerHTML = "";
+
+        let url = apiBaseUrl;
+        if (searchTerm) {
+            url = `${apiBaseUrl}?search=${encodeURIComponent(searchTerm)}`;
+        }
+
+        fetch(url)
+            .then(res => res.json())
+            .then(items => {
+                items.forEach(item => {
+                        createBox(item.name, item.id, item.count || 0);
+                });
+            })
+            .catch(err => console.error("Error fetching items:", err));
+    }
+
+    // load items on page start
+    loadItems();
+
+    
+    const searchInput = document.getElementById("search");
+    
+    // searchInput.addEventListener("keydown", (e) => {
+    // if (e.key === "Enter") {
+    //     loadItems(searchInput.value);
+    // } else if (searchInput.value === "") {
+    //     loadItems();
+    // }
+    // });
+
+    // search while typing, makes the server work more, so I changed it to search on enter key press instead
+    searchInput.addEventListener("input", () => {
+        loadItems(searchInput.value);
+    });
 });
