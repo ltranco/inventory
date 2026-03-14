@@ -34,12 +34,19 @@ class ItemLedgerViewSet(viewsets.ModelViewSet):
 
 
     
-    
+# learn how to use REACT, come back with questions if any
+# make sure to save the chatgpt learning session and share to chu long
+# can learn by doing, have something to work towards 
 
-# make query parameters working - edit the UI to add a search bar
-# make the ledger the one that is affected by the frontend, send ledger data to item table, UI reads data from item table
 # Estimated deadline for code review, send in discord
 # request a code review from Chu Long
     
+# practice git skills, make a branch, commit, push, create a pull request, request a code review, merge the pull request
+# make sure to fix the front end handling with the count
+
+# make the PR but don't include any of the front end changes, 
+# only the back end and API changes 
+
+
 
 

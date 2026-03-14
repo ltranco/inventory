@@ -138,14 +138,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     
     const searchInput = document.getElementById("search");
-    
-    // searchInput.addEventListener("keydown", (e) => {
-    // if (e.key === "Enter") {
-    //     loadItems(searchInput.value);
-    // } else if (searchInput.value === "") {
-    //     loadItems();
-    // }
-    // });
 
     // search while typing, makes the server work more, so I changed it to search on enter key press instead
     searchInput.addEventListener("input", () => {
