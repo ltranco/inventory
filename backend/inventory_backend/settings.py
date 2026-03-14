@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-#h@#-5y34v@szbc8936s9pn)%-+la2tbxj^0=o0nb8q)*f=s4m
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost"
+    "localhost",
+    "127.0.0.1",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -38,6 +39,8 @@ CORS_ALLOW_ALL_ORIGINS = True # remove this when we push to PROD!!!!
 # Application definition
 
 INSTALLED_APPS = [
+    'tracking',
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
