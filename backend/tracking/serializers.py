@@ -6,8 +6,6 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = ['id', 'name', 'count'] 
         read_only_fields = ['count'] 
-        # creates a helpful json response
-        # deserializing turns the json back to python
 
 
     # POST - moved the validator logic from views to here, less manual and more reusable
@@ -32,18 +30,3 @@ class ItemLedgerSerializer(serializers.ModelSerializer):
         fields = ['id', 'item', 'delta', 'occurred_at', 'recorded_at']
         read_only_fields = ['id', 'recorded_at']
         
-
-
-
-
-
-
-
-    # look into what happens if we have nested objects, an item has a memo/note
-    # the note is another object in another table
-    # how would you serialize that?
-
-    # what if you want to change the return format, make it more fancy, 
-    # or have extra fields the model currently doesnt have
-    
-    # using the serializer to change the format of the db
