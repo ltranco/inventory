@@ -1,102 +1,53 @@
-import json, os
-from django.http import JsonResponse
-import logging
-from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-import requests
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import OrderingFilter, SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
+from .models import Items, ItemsLedger
+from .serializers import ItemSerializer, LedgerSerializer
 
-logger = logging.getLogger(__name__)
-storage_file = os.path.join(os.path.dirname(__file__), '..', 'storage.json')
-storage_file = os.path.abspath(storage_file)
+class ItemViewSet(ModelViewSet):
+    queryset = Items.objects.all()
+    serializer_class = ItemSerializer
 
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+ 
+    filterset_fields = ["name", "qty"]
 
+    search_fields = ["name"]
+   
+    ordering_fields = ["name", "qty"]
+    ordering = ["id"] 
 
-def parse_json_request(request):
-    try:
-        return json.loads(request.body.decode("utf-8"))
-    except json.JSONDecodeError:
-        return {}
+    def perform_create(self, serializer):
+        item = serializer.save()
 
+        ItemsLedger.objects.create(
+            item=item,
+            delta=item.qty,
+            
+        )
 
+    def perform_update(self, serializer):
+        old_item = self.get_object()
+        old_qty = old_item.qty
 
+        updated_item = serializer.save()
+        new_qty = updated_item.qty
+        delta = new_qty - old_qty
 
-@method_decorator(csrf_exempt, name="dispatch")
-class ItemsView(View):
-    def get(self, request, *args, **kwargs):
-        if not os.path.exists(storage_file):
-            return JsonResponse([])
-        with open(storage_file, 'r') as f:
-            data = json.load(f)
-        return JsonResponse(data, safe=False)
+        if delta != 0:
+            ItemsLedger.objects.create(
+                item=updated_item,
+                delta=delta,
+            )
 
-    def post(self, request, *args, **kwargs):
-        if not os.path.exists(storage_file):
-            return JsonResponse([])
-        
-        payload = parse_json_request(request)
-        logger.info(payload)
-        with open(storage_file, 'r') as f:
-            existing_items = json.load(f)
-        existing_ids = set([item['id'] for item in existing_items])
-        if payload['id'] in existing_ids:
-            return JsonResponse({'error': 'ID already exists'}, status=requests.codes.bad_request)
-        
-        existing_items.append(payload)
-        with open(storage_file, 'w') as f:
-            json.dump(existing_items, f)
-        return JsonResponse({'results': existing_items})
-    
-    def patch(self, request, *args, **kwargs):
-        if not os.path.exists(storage_file):
-            return JsonResponse([])
-        
-        payload = parse_json_request(request)
-        logger.info(payload)
-        with open(storage_file, 'r') as f:
-            existing_items = json.load(f)
+    def perform_destroy(self, instance):
+        ItemsLedger.objects.create(
+            item=instance,
+            delta=-instance.qty,
+        )
+        instance.delete() 
 
-        incoming_id = payload.get('id')
-        if incoming_id is None or not any(item['id'] == incoming_id for item in existing_items):
-            return JsonResponse({'error': 'ID does not exist'}, status=requests.codes.bad_request)
-        
-
-        for item in existing_items:
-            if item['id'] == payload['id']:
-                item.update(payload)
-
-        with open(storage_file, 'w') as f:
-            json.dump(existing_items, f)
-        return JsonResponse({'results': existing_items})
-        
-    def delete(self, request, *args, **kwargs):
-        if not os.path.exists(storage_file):
-            return JsonResponse([])
-        
-        payload = parse_json_request(request)
-        logger.info(payload)
-        with open(storage_file, 'r') as f:
-            existing_items = json.load(f)
-        
-        incoming_id = payload.get('id')
-        if incoming_id is None or not any(item['id'] == incoming_id for item in existing_items):
-            return JsonResponse({'error': 'ID does not exist'}, status=requests.codes.bad_request)
-        
-        for item in existing_items:
-            if item['id'] == payload['id']:
-                existing_items.remove(item)
-
-        with open(storage_file, 'w') as f:
-            json.dump(existing_items, f)
-            return JsonResponse({'results': existing_items})
-
-
-
-
-    
-
-
-
-#TODO: add delete method
-
+class ItemsLedgerViewSet(ModelViewSet):
+    queryset = ItemsLedger.objects.all().order_by("-created_at")
+    serializer_class = LedgerSerializer
