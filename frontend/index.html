@@ -1,15 +1,42 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="script.js"></script>
 </head>
 <body>
-    <h1>Inventory</h1>
-    <div class="grid-container"></div>
-    <div class = "input-container">
-        <input id="item" placeholder="Enter a new item name">
-        <button id="addItem">Add Item</button>
-    </div>
-</body>
+    <div class="page">
+        <div class="top-bar">
+            <h1>Inventory</h1>
 
+            <div class="top-actions">
+                <div class="search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input id="searchInput" type="text" placeholder="Search inventory">
+                </div>
+
+                <button id="historyBtn" class="history-btn">History</button>
+                <button id="openAddModal" class="new-btn">New Item</button>
+            </div>
+        </div>
+
+        <div class="grid-container"></div>
+    </div>
+
+    <div id="addModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Add New Item</h2>
+            <input id="item" type="text" placeholder="Enter a new item name">
+
+            <div class="modal-buttons">
+                <button id="addItem">Add</button>
+                <button id="closeModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>

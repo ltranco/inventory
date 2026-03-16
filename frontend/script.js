@@ -1,20 +1,44 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-    
     const container = document.querySelector(".grid-container");
+    const itemInput = document.getElementById("item");
+    const addItemButton = document.getElementById("addItem");
+
+    const openAddModalButton = document.getElementById("openAddModal");
+    const closeModalButton = document.getElementById("closeModal");
+    const addModal = document.getElementById("addModal");
+
+    const searchInput = document.getElementById("searchInput");
+    const historyButton = document.getElementById("historyBtn");
+
+    function openModal() {
+        addModal.classList.remove("hidden");
+        itemInput.value = "";
+        itemInput.focus();
+    }
+
+    function closeModal() {
+        addModal.classList.add("hidden");
+        itemInput.value = "";
+    }
+
+    function clearBoxes() {
+        container.innerHTML = "";
+    }
+
     function createBox(name, id, initialCount = 0) {
         const box = document.createElement("div");
         box.classList.add("box");
-        box.id = id;
+        box.dataset.id = id;
+        box.dataset.name = name.toLowerCase();
 
         box.innerHTML = `
-        <div class="title">${name}</div>
-        <div class="middle">
-            <button class="minus">-</button>
-            <div class="count">${initialCount}</div>
-            <button class="plus">+</button>
-        </div>
-        <button class="delete">DEL</button>
+            <div class="title">${name}</div>
+            <div class="middle">
+                <button class="minus">-</button>
+                <div class="count">${initialCount}</div>
+                <button class="plus">+</button>
+            </div>
+            <button class="delete">DEL</button>
         `;
 
         container.appendChild(box);
@@ -24,103 +48,125 @@ document.addEventListener("DOMContentLoaded", function () {
         const countStr = box.querySelector(".count");
         const deleteButton = box.querySelector(".delete");
 
-        let count = initialCount;
+        let qty = initialCount;
 
-
-
-        // PATCH Method
         function patchCount(newCount) {
-            fetch(`http://localhost:8000/items/`, {
+            fetch(`http://localhost:8000/items/${id}/`, {
                 method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ id: id, count: newCount })
-            });
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ qty: newCount })
+            })
+            .catch((err) => console.error("Error updating item:", err));
         }
 
-
         plusButton.addEventListener("click", () => {
-            count++;
-            countStr.textContent = count;
-            patchCount(count); // update backend
+            qty++;
+            countStr.textContent = qty;
+            patchCount(qty);
         });
 
         minusButton.addEventListener("click", () => {
-            if (count > 0) { // making sure the count doesnt go negative
-                count--;
-                countStr.textContent = count;
-                patchCount(count); // update backend
+            if (qty > 0) {
+                qty--;
+                countStr.textContent = qty;
+                patchCount(qty);
             }
         });
 
-        // DELETE Method
         deleteButton.addEventListener("click", () => {
-            fetch(`http://localhost:8000/items/`, {
-                method: "DELETE",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({id: id})
+            fetch(`http://localhost:8000/items/${id}/`, {
+                method: "DELETE"
             })
-            .then(x => x.json())
-            .then(() => {
-                box.remove(); // remove from DOM
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Delete failed: ${response.status}`);
+                }
+                box.remove();
             })
-            .catch(err => console.error("Error deleting item:", err));
+            .catch((err) => console.error("Error deleting item:", err));
         });
     }
 
-    
-    
+    function renderItems(items) {
+        clearBoxes();
+        items.forEach((item) => {
+            createBox(item.name, item.id, item.qty);
+        });
+    }
 
+    function fetchItems(searchTerm = "") {
+        const params = new URLSearchParams();
 
-    // get correct id for new item and then POST to backend
-    const itemInput = document.getElementById("item");
-    const addItemButton = document.getElementById("addItem");
+        if (searchTerm) {
+            params.append("search", searchTerm);
+        }
 
-    addItemButton.addEventListener("click", () => {
+        fetch(`http://localhost:8000/items/?${params}`)
+            .then(response => response.json())
+            .then(items => {renderItems(items);
+        })
+        .catch(err => console.error(err));
+    }
+
+    function addNewItem() {
         const itemName = itemInput.value.trim();
         if (!itemName) return;
 
-        // fetch current items to find any available ids
-        fetch("http://localhost:8000/items/")
-            .then(x => x.json())
-            .then(items => {
-            // get existing ids
-                const existingIds = items.map(item => item.id);
-            
-            // find smallest unused id
-                let newId = 1;
-                while (existingIds.includes(newId)) {
-                    newId++;
-                }
-
-                const newItem = { id: newId, name: itemName, count: 0 };
-            // POST to backend
-            fetch("http://localhost:8000/items/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newItem)
-            })
-            .then(x => x.json())
-            .then(() => {
-                createBox(newItem.name, newItem.id, newItem.count);
-                itemInput.value = "";
-            })
-            .catch(err => console.error("Error adding item:", err));
-    });
-
-    });
-
-    // GET Method, fetching existing items from the backend
-    fetch("http://localhost:8000/items/")
-        .then(x => x.json())
-        .then(items => {
-            items.forEach(item => {
-                createBox(item.name, item.id, item.count);
-            });
+        fetch("http://localhost:8000/items/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: itemName, qty: 0 })
         })
-        .catch(err => console.error("Error fetching items:", err));
+        .then((response) => response.json())
+        .then(() => {
+            closeModal();
+            fetchItems(searchInput.value.trim());
+        })
+        .catch((err) => console.error("Error adding item:", err));
+    }
 
+    if (openAddModalButton) {
+        openAddModalButton.addEventListener("click", openModal);
+    }
 
-        // maybe enhance the coloring options by adding a new input section where they can also enter a new item name + color of choice and then add item
-        // somehow save the colors in the backend as well
+    if (closeModalButton) {
+        closeModalButton.addEventListener("click", closeModal);
+    }
 
+    if (addModal) {
+        addModal.addEventListener("click", (e) => {
+            if (e.target === addModal) {
+                closeModal();
+            }
+        });
+    }
+
+    if (addItemButton) {
+        addItemButton.addEventListener("click", addNewItem);
+    }
+
+    if (itemInput) {
+        itemInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                addNewItem();
+            }
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                const searchTerm = searchInput.value.trim();
+                fetchItems(searchTerm);
+            }
+        });
+    }
+
+    // if (historyButton) {
+    //     historyButton.addEventListener("click", () => {
+    //         alert("");
+    //     });
+    // }
+
+    fetchItems();
 });
