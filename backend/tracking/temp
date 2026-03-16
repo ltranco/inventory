@@ -1,0 +1,31 @@
+<FRONT END >
+  GET /api/v1/inventory  -> [{}, {}]
+  POST /api/v1/inventory {name: 'green', qty: 3} -> 
+  
+<BACKEND - django >
+ <VIEWS>: receiving dock > route the request > validate > warehouse manager > the warehouse
+    - need to look for black tea. Gimme black tea from Inventory
+    - hey, put 3 green tea into Inventory
+    - hey, update inventory id 27 to qty = 20
+ <MODEL>
+    class Inventory(django.models.Model):
+      id = Char (UNIQUE)
+      name = Char (255)
+      qty = Int
+
+    name = request.body.json().get('name')
+    qty = request.body.json().get('qty')
+    i = Inventory(name=name, qty=qty)
+    i.save()
+<DATABASE>
+  - sqlite3
+  - postgres
+  - mysql...
+
+
+
+
+table: Item
+| id | name | qty |
+| --- | --- | --- |
+| 1 | green | 3 |
