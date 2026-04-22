@@ -1,0 +1,109 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+    
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    padding: 20px;
+    height: 200px;
+    border-radius: 10px;
+}
+
+.title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.middle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.count {
+    font-size: 48px;
+    font-weight: bold;
+}
+
+button.minus, button.plus {
+    background: transparent;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+button.delete {
+    display: block;          
+    margin: 10px auto 0;     
+    background: transparent;
+    border: solid black 1px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#addItem {
+    background: transparent;
+    border: solid black 1px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;          
+    margin-top: 20px;   
+    justify-content: center; 
+    
+
+}
+
+.input-container input {
+    padding: 5px 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.input-container button {
+    padding: 5px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#search {
+    display: block;
+    margin: 20px auto;
+    padding: 5px 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+
+
+#green {
+    background-color: #74a662;
+}
+
+#black {
+    background-color: #786554;
+}
+
+#oolong {
+    background-color: #fde2b4;
+}
+
+#grey {
+    background-color: #675b5b;
+}
+
+
