@@ -3,6 +3,7 @@ import './App.css'
 
 function App() {
   const [items, setItems] = useState([])
+  const [newItem, setNewItem] = useState("")
 
   const apiBaseUrl = "http://127.0.0.1:8000/api/items/"
   const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/"
@@ -16,6 +17,7 @@ function App() {
       .catch(err => console.log("Error fetching items: ", err))
   }, [])
 
+  // Function to post ledger updates to the backend
   function postLedger(itemId, delta) {
     return fetch(ledgerApiUrl, {
       method: "POST",
@@ -35,21 +37,36 @@ function App() {
     })
   }
 
+  // Handle the update of the count when plus or minus buttons are clicked
   function handleUpdate(itemId, delta) {
-      setItems(
-        items.map(item => {
+    // Find the item in the current state
+    const item = items.find(item => item.id === itemId)
+    if (!item) {
+      return
+    }
+    // Calculate the new count and prevent it from going negative
+    const newCount = item.count + delta
+    if (newCount < 0) {
+      return
+    }
+
+    // Update the count in the backend and then update the state
+    postLedger(itemId, delta).then(() => {
+      setItems(previousItems => { 
+        return previousItems.map(item => {
           if (item.id === itemId) {
-            const newCount = item.count + delta
-            if (newCount >= 0) {
             return {...item, count: newCount}
-            } else {  
-              return item
-            }
-          } else {
-            return item // return the item bc no need for updates
-          } 
+          } else {  
+            return item
+          }
         })
-      )
+      })
+    })
+    .catch(err => console.log("Error Updating the count", err))
+  }
+
+  function handleAddItem() {
+
   }
 
 
@@ -77,7 +94,7 @@ function App() {
       </div>
 
       <div className="input-container">
-        <input id="item" placeholder="Enter a new item name" />
+        <input id="item" value={newItem} onChange={(e)=> handleAddItem} placeholder="Enter a new item name" />
         <button id="addItem">Add Item</button>
       </div>
     </>
